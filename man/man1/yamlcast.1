@@ -1,0 +1,136 @@
+.nh
+.TH YAMLCAST(1) YAMLcast User Manual
+Ingy döt Net
+2026
+
+.SH NAME
+yamlcast \- render a YAML screencast description as an animated GIF
+
+
+.SH SYNOPSIS
+\fByamlcast\fP [\fB--dry-run\fP] \fIFILE\fP
+
+
+.SH DESCRIPTION
+\fByamlcast\fP reads \fIFILE\fP, a YAML description of a terminal screencast,
+translates it into a \fBvhs\fP(1) \fB\&.tape\fR script, and invokes \fBvhs\fP to render
+the resulting animated GIF.
+
+.PP
+The translator is a YAMLScript program.
+\fBys-0\fR, Go, and \fBvhs\fP are installed on demand into the project's
+\fB\&./.cache/\fR directory.
+
+
+.SH OPTIONS
+.TP
+\fB--dry-run\fP
+Print the generated \fB\&.tape\fR script to standard output and do not invoke
+\fBvhs\fP\&.
+
+
+.SH INPUT FORMAT
+The input file is a YAML mapping.
+The recognized top-level keys are:
+.TP
+\fBoutput\fP
+Optional.
+The name of the output GIF file.
+If omitted, defaults to the input file name with its \fB\&.yaml\fR or \fB\&.yml\fR
+extension replaced by \fB\&.gif\fR (so \fBfoo.yaml\fR produces \fBfoo.gif\fR).
+
+.TP
+\fBsteps\fP
+Optional sequence describing the actions to record.
+Each entry is one of:
+.RS
+.IP \(bu 2
+A single-key mapping.
+Supported keys are
+\fBtype\fP, \fBsleep\fP, \fBenter\fP, \fBimage\fP, \fBtab\fP, \fBbackspace\fP,
+\fBspace\fP, \fBhide\fP, \fBshow\fP, \fBscreenshot\fP, \fBctrl\fP, \fBsource\fP,
+and \fBrequire\fP\&.
+\fBenter\fP may be given an optional text value; in that form the text
+is typed and then \fBEnter\fP is pressed.
+\fBimage\fP takes a path; the image is rendered in the cast terminal
+with \fByc-image\fR, with the typing of the command hidden.
+.IP \(bu 2
+A bare ALL-CAPS string (e.g. \fBCLEAR\fP, \fBENTER\fP, \fBCTRL+L\fP):
+emits the matching VHS key command with no typing.
+.IP \(bu 2
+A bare string that names an existing file (short form for \fBimage:\fR):
+the file is rendered as an image.
+.IP \(bu 2
+Any other bare string (short form for \fBenter:\fR):
+the string is typed and \fBEnter\fP is pressed.
+.IP \(bu 2
+A bare number (short form for \fBsleep:\fR):
+sleep for that many milliseconds.
+.RE
+
+.PP
+Any other top-level key is treated as a VHS \fBSet\fR directive.
+Keys use \fBsnake_case\fR and are converted to VHS's \fBPascalCase\fR automatically
+(for example, \fBfont_size\fR becomes \fBFontSize\fR).
+
+.PP
+Inside a \fBtype\fP value, bracketed tokens are expanded into the matching VHS
+key commands.
+Recognized tokens are
+\fB<ENTER>\fR, \fB<TAB>\fR, \fB<SPACE>\fR, \fB<BACKSPACE>\fR,
+\fB<UP>\fR, \fB<DOWN>\fR, \fB<LEFT>\fR, \fB<RIGHT>\fR,
+and \fB<CTRL+X>\fR for any single key \fIX\fP\&.
+
+
+.SH ENVIRONMENT
+.TP
+\fBYAMLCAST_ROOT\fP
+Absolute path to the YAMLcast project directory.
+\fByamlcast\fP refuses to run unless this is set.
+Source the project's \fB\&.rc\fR file to set it.
+
+
+.SH EXIT STATUS
+\fByamlcast\fP exits 0 on success and non-zero on any error, including a
+missing or invalid input file, an unset \fBYAMLCAST_ROOT\fP, or a failed
+\fBvhs\fP invocation.
+
+
+.SH EXAMPLES
+Render \fBexample.yaml\fR to the GIF named by its \fBoutput\fR key:
+
+.EX
+yamlcast example.yaml
+.EE
+
+.PP
+Print the generated \fB\&.tape\fR script without rendering:
+
+.EX
+yamlcast --dry-run example.yaml
+.EE
+
+
+.SH FILES
+.TP
+\fI$YAMLCAST_ROOT/.cache/local/bin/vhs\fP
+The locally-installed \fBvhs\fP binary.
+
+.TP
+\fI$YAMLCAST_ROOT/.rc\fP
+Shell snippet that exports \fBYAMLCAST_ROOT\fP and extends \fBPATH\fP and
+\fBMANPATH\fP\&.
+
+
+.SH SEE ALSO
+\fBvhs\fP(1), \fBmake\fP(1)
+
+.PP
+
+\[la]https://github.com/charmbracelet/vhs\[ra], 
+\[la]https://yamlscript.org\[ra]
+
+
+.SH COPYRIGHT
+Copyright 2026 Ingy döt Net.
+Licensed under the MIT License.
