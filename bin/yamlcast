@@ -1,6 +1,9 @@
 #!/usr/bin/env ys-0
 
 defn main(*args):
+  when ENV.YAMLCAST_ROOT.!:
+    die: "Error:\  YAMLCAST_ROOT is not set; 'source .rc' first"
+
   args =: args.remove(\(_ == '--'))
   dry-run =: in?('--dry-run' args)
   file =: args.remove(\(_ == '--dry-run')):first
@@ -12,18 +15,22 @@ defn main(*args):
     die: "Error:\  file '$file' not found"
 
   data =: yaml/load(file:read)
+  output =: data.get('output' default-output(file))
+  data =: assoc(data 'output' output)
   tape =: generate-tape(data)
 
   if dry-run:
     say: tape
-    run-vhs: tape data.get('output' 'output.gif')
+    run-vhs: tape output
+
+defn default-output(file):
+  if re-find(/\.ya?ml$/ file):
+    =>: file.replace(/\.ya?ml$/ '.gif')
+    =>: "$file.gif"
 
 defn generate-tape(data):
   output =: data.get('output')
-  when output.!:
-    die: "Error:\  'output' key is required"
-
-  settings =: data.get('settings' {})
+  settings =: dissoc(data 'output' 'steps')
   set-lines =:
     mapv _ settings:
       fn(e):
@@ -32,11 +39,7 @@ defn generate-tape(data):
   steps =: data.get('steps' [])
   stp-lines =:
     vec:
-      mapcat _ steps:
-        fn(step):
-          mapcat _ step:
-            fn(e):
-              step-to-lines e:key: e:val
+      mapcat _ steps: process-step
 
   header =: +["Output $output" '']
   footer =: +['']
@@ -51,11 +54,40 @@ defn setting-line(k v):
     =>: "Set $name $v"
     =>: "Set $name \"$v\""
 
+defn process-step(step):
+  cond:
+    string?(step): string-step(step)
+    number?(step): +["Sleep ${step}ms"]
+    else:          step-from-map(step)
+
+defn string-step(s):
+  cond:
+    re-matches(/[A-Z][A-Z+]*/ s): +[token-line(s)]
+    s:fs-f:                       image-lines(s)
+    else:                         type-then-enter(s)
+
+defn image-lines(path):
+  +["Hide" "Type \"yc-image $path\"" "Enter" "Show"]
+
+defn step-from-map(step):
+  mapcat _ step:
+    fn(e):
+      step-to-lines e:key: e:val
+
+defn type-then-enter(text):
+  parse-type(text).conj('Enter')
+
+defn enter-lines(v):
+  if v:
+    type-then-enter(v:S)
+    +['Enter']
+
 defn step-to-lines(k v):
   cond:
     k == 'type':       parse-type(v:S)
     k == 'sleep':      +["Sleep $v"]
-    k == 'enter':      +['Enter']
+    k == 'enter':      enter-lines(v)
+    k == 'image':      image-lines(v:S)
     k == 'tab':        +['Tab']
     k == 'backspace':  +['Backspace']
     k == 'space':      +['Space']
@@ -67,38 +99,65 @@ defn step-to-lines(k v):
     k == 'require':    +["Require $v"]
     else:              +[]
 
+token-map =::
+  ENTER: Enter
+  TAB: Tab
+  SPACE: Space
+  BACKSPACE: Backspace
+  UP: Up
+  DOWN: Down
+  LEFT: Left
+  RIGHT: Right
+  CLEAR: Ctrl+L
+
+defn token-line(key):
+  if key.starts?('CTRL+'):
+    =>: "Ctrl+$(key.replace('CTRL+' ''))"
+    =>: token-map.get(key key)
+
 defn parse-type(text):
-  token-map =::
-    ENTER: Enter
-    TAB: Tab
-    SPACE: Space
-    BACKSPACE: Backspace
-    UP: Up
-    DOWN: Down
-    LEFT: Left
-    RIGHT: Right
   parts =: re-seq(/[^<]+|<[A-Z+]+>/ text)
-  mapv _ parts:
-    fn(part):
-      if part.starts?('<'):
-        then:
-          key =: part.replace(/<|>/ '')
-          if key.starts?('CTRL+'):
-            =>: "Ctrl+$(key.replace('CTRL+' ''))"
-            =>: token-map.get(key key)
-        else:
-          =>: "Type \"$part\""
+  vec:
+    mapcat _ parts:
+      fn(part):
+        if part.starts?('<'):
+          then:
+            +[token-line(part.replace(/<|>/ ''))]
+          else:
+            type-lines(part)
+
+defn type-lines(text):
+  tokens =: re-seq(/[^"'`]+|["'`]/ text)
+  mapv _ tokens: quote-type-token
+
+defn quote-type-token(tok):
+  cond:
+    tok == "\"": "Type '\"'"
+    tok == "'":  "Type \"'\""
+    tok == "`":  "Type \"`\""
+    else:        "Type \"$tok\""
 
 defn snake-to-pascal(s):
   parts =: s.split(/_/)
   =>: parts.mapv(\(uc1 _)).join()
 
+defn find-vhs():
+  result =: sh('make' '-s' '-C' ENV.YAMLCAST_ROOT 'vhs-path')
+  when result.exit != 0:
+    die: "Error:\  failed to locate vhs:\n$(result.err)"
+  =>: str/trim(result.out)
+
 defn run-vhs(tape output):
-  tape-file =: "/tmp/yamlcast-$$.tape"
+  tape-file =: "/tmp/yamlcast-$(random-uuid).tape"
+  vhs-bin =: find-vhs()
   write tape-file: tape
   warn: "Running vhs to generate '$output'..."
-  result =: sh('vhs' tape-file)
-  sh 'rm': tape-file
-  if result.exit == 0:
+  result =: sh(vhs-bin tape-file)
+  when result.exit == 0:
+    sh 'rm': tape-file
     warn: "Created '$output'"
-    die: "Error:\  vhs failed"
+  when result.exit != 0:
+    warn: "vhs stdout:\n$(result.out)"
+    warn: "vhs stderr:\n$(result.err)"
+    warn: "tape file kept at: $tape-file"
+    die: "Error:\  vhs failed (exit $(result.exit))"
