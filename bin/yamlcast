@@ -1,0 +1,104 @@
+#!/usr/bin/env ys-0
+
+defn main(*args):
+  args =: args.remove(\(_ == '--'))
+  dry-run =: in?('--dry-run' args)
+  file =: args.remove(\(_ == '--dry-run')):first
+
+  when file.!:
+    die: 'Usage: yamlcast [--dry-run] <file.yaml>'
+
+  when-not file:fs-f:
+    die: "Error:\  file '$file' not found"
+
+  data =: yaml/load(file:read)
+  tape =: generate-tape(data)
+
+  if dry-run:
+    say: tape
+    run-vhs: tape data.get('output' 'output.gif')
+
+defn generate-tape(data):
+  output =: data.get('output')
+  when output.!:
+    die: "Error:\  'output' key is required"
+
+  settings =: data.get('settings' {})
+  set-lines =:
+    mapv _ settings:
+      fn(e):
+        setting-line e:key: e:val
+
+  steps =: data.get('steps' [])
+  stp-lines =:
+    vec:
+      mapcat _ steps:
+        fn(step):
+          mapcat _ step:
+            fn(e):
+              step-to-lines e:key: e:val
+
+  header =: +["Output $output" '']
+  footer =: +['']
+  parts =: +[header set-lines footer stp-lines]
+  all =: vec(apply(concat parts))
+  =>: all.join("\n")
+
+defn setting-line(k v):
+  name =: snake-to-pascal(k)
+  vs =: str(v)
+  if re-find(/^\d/ vs):
+    =>: "Set $name $v"
+    =>: "Set $name \"$v\""
+
+defn step-to-lines(k v):
+  cond:
+    k == 'type':       parse-type(v:S)
+    k == 'sleep':      +["Sleep $v"]
+    k == 'enter':      +['Enter']
+    k == 'tab':        +['Tab']
+    k == 'backspace':  +['Backspace']
+    k == 'space':      +['Space']
+    k == 'hide':       +['Hide']
+    k == 'show':       +['Show']
+    k == 'screenshot': +['Screenshot']
+    k == 'ctrl':       +["Ctrl+$v"]
+    k == 'source':     +["Source $v"]
+    k == 'require':    +["Require $v"]
+    else:              +[]
+
+defn parse-type(text):
+  token-map =::
+    ENTER: Enter
+    TAB: Tab
+    SPACE: Space
+    BACKSPACE: Backspace
+    UP: Up
+    DOWN: Down
+    LEFT: Left
+    RIGHT: Right
+  parts =: re-seq(/[^<]+|<[A-Z+]+>/ text)
+  mapv _ parts:
+    fn(part):
+      if part.starts?('<'):
+        then:
+          key =: part.replace(/<|>/ '')
+          if key.starts?('CTRL+'):
+            =>: "Ctrl+$(key.replace('CTRL+' ''))"
+            =>: token-map.get(key key)
+        else:
+          =>: "Type \"$part\""
+
+defn snake-to-pascal(s):
+  parts =: s.split(/_/)
+  =>: parts.mapv(\(uc1 _)).join()
+
+defn run-vhs(tape output):
+  tape-file =: "/tmp/yamlcast-$$.tape"
+  write tape-file: tape
+  warn: "Running vhs to generate '$output'..."
+  result =: sh('vhs' tape-file)
+  sh 'rm': tape-file
+  if result.exit == 0:
+    warn: "Created '$output'"
+    die: "Error:\  vhs failed"
