@@ -7,9 +7,9 @@ background_color: '#171717'
 
 steps:
 - bg_color: '#ffffff'
-- 3000
+- 2000
 - RESET
-- 1500
+- 500
 - ls -l example.*
 - 500
 - cat example.yaml
@@ -20,4 +20,4 @@ steps:
 - wait: Created
 - 500
 - ls -l example.*
-- 3000
+- 2000
