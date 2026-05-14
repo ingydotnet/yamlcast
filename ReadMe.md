@@ -62,13 +62,19 @@ Each step is one of:
 
 - A single-key mapping.
   Supported keys: `type`, `sleep`, `enter`, `image`, `tab`, `backspace`,
-  `space`, `hide`, `show`, `screenshot`, `ctrl`, `source`, `require`.
+  `space`, `hide`, `show`, `screenshot`, `ctrl`, `source`, `require`,
+  `bg_color`.
   `enter` may take an optional text value; the text is typed and then
   `Enter` is pressed.
   `image` takes a path; the image is rendered in the cast terminal with
   `yc-image`, with the typing of the command hidden.
+  `bg_color` takes a hex color (with or without a leading `#`) and
+  changes the terminal background mid-cast.
 - A bare ALL-CAPS string (e.g. `CLEAR`, `ENTER`, `CTRL+L`): emits the
   matching VHS key command with no typing.
+  `RESET` is a special case: it re-emits every top-level setting,
+  reverting any mid-cast overrides (such as `bg_color`) back to the
+  baseline.
 - A bare string that names an existing file (short form for `image:`): the
   file is rendered as an image.
 - Any other bare string (short form for `enter:`): the string is typed and

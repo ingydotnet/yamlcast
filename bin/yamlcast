@@ -36,10 +36,12 @@ defn generate-tape(data):
       fn(e):
         setting-line e:key: e:val
 
+  bg-default =: data.get('background_color')
   steps =: data.get('steps' [])
   stp-lines =:
     vec:
-      mapcat _ steps: process-step
+      mapcat _ steps:
+        fn(step): process-step(step bg-default)
 
   header =: +["Output $output" '']
   footer =: +['']
@@ -48,23 +50,32 @@ defn generate-tape(data):
   =>: all.join("\n")
 
 defn setting-line(k v):
-  name =: snake-to-pascal(k)
-  vs =: str(v)
-  if re-find(/^\d/ vs):
-    =>: "Set $name $v"
-    =>: "Set $name \"$v\""
-
-defn process-step(step):
   cond:
-    string?(step): string-step(step)
+    k == 'background_color': bg-color-line(v)
+    else:
+      name =: snake-to-pascal(k)
+      vs =: str(v)
+      if re-find(/^\d/ vs):
+        =>: "Set $name $v"
+        =>: "Set $name \"$v\""
+
+defn process-step(step bg-default):
+  cond:
+    string?(step): string-step(step bg-default)
     number?(step): +["Sleep ${step}ms"]
     else:          step-from-map(step)
 
-defn string-step(s):
+defn string-step(s bg-default):
   cond:
+    s == 'RESET':                 reset-lines(bg-default)
     re-matches(/[A-Z][A-Z+]*/ s): +[token-line(s)]
     s:fs-f:                       image-lines(s)
     else:                         type-then-enter(s)
+
+defn reset-lines(bg-default):
+  if bg-default:
+    bg-osc-lines(bg-default)
+    +[]
 
 defn image-lines(path):
   +["Hide" "Type \"yc-image $path\"" "Enter" "Show"]
@@ -97,7 +108,26 @@ defn step-to-lines(k v):
     k == 'ctrl':       +["Ctrl+$v"]
     k == 'source':     +["Source $v"]
     k == 'require':    +["Require $v"]
+    k == 'bg_color':   bg-osc-lines(v)
     else:              +[]
+
+defn bg-color-line(v):
+  =>: "Set Theme { \"background\": \"$(bg-hex(v))\" }"
+
+defn bg-osc-lines(v):
+  hex =: bg-hex(v)
+  =>:
+    +["Hide"
+      "Type \"printf '\\033]11;$hex\\007'\""
+      "Enter"
+      "Ctrl+L"
+      "Show"]
+
+defn bg-hex(v):
+  vs =: v:S
+  if vs.starts?('#'):
+    =>: vs
+    =>: "#$vs"
 
 token-map =::
   ENTER: Enter

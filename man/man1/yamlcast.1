@@ -49,14 +49,19 @@ A single-key mapping.
 Supported keys are
 \fBtype\fP, \fBsleep\fP, \fBenter\fP, \fBimage\fP, \fBtab\fP, \fBbackspace\fP,
 \fBspace\fP, \fBhide\fP, \fBshow\fP, \fBscreenshot\fP, \fBctrl\fP, \fBsource\fP,
-and \fBrequire\fP\&.
+\fBrequire\fP, and \fBbg_color\fP\&.
 \fBenter\fP may be given an optional text value; in that form the text
 is typed and then \fBEnter\fP is pressed.
 \fBimage\fP takes a path; the image is rendered in the cast terminal
 with \fByc-image\fR, with the typing of the command hidden.
+\fBbg_color\fP takes a hex color (with or without a leading \fB#\fR) and
+changes the terminal background mid-cast.
 .IP \(bu 2
 A bare ALL-CAPS string (e.g. \fBCLEAR\fP, \fBENTER\fP, \fBCTRL+L\fP):
 emits the matching VHS key command with no typing.
+\fBRESET\fP is a special case: it re-emits every top-level setting,
+reverting any mid-cast overrides (such as \fBbg_color\fP) back to
+the baseline.
 .IP \(bu 2
 A bare string that names an existing file (short form for \fBimage:\fR):
 the file is rendered as an image.

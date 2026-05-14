@@ -45,13 +45,18 @@ The recognized top-level keys are:
       Supported keys are
       **type**, **sleep**, **enter**, **image**, **tab**, **backspace**,
       **space**, **hide**, **show**, **screenshot**, **ctrl**, **source**,
-      and **require**.
+      **require**, and **bg_color**.
       **enter** may be given an optional text value; in that form the text
       is typed and then **Enter** is pressed.
       **image** takes a path; the image is rendered in the cast terminal
       with `yc-image`, with the typing of the command hidden.
+      **bg_color** takes a hex color (with or without a leading `#`) and
+      changes the terminal background mid-cast.
     - A bare ALL-CAPS string (e.g. **CLEAR**, **ENTER**, **CTRL+L**):
       emits the matching VHS key command with no typing.
+      **RESET** is a special case: it re-emits every top-level setting,
+      reverting any mid-cast overrides (such as **bg_color**) back to
+      the baseline.
     - A bare string that names an existing file (short form for `image:`):
       the file is rendered as an image.
     - Any other bare string (short form for `enter:`):
