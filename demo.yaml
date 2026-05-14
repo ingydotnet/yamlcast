@@ -6,7 +6,10 @@ padding: 0
 background_color: '#171717'
 
 steps:
-- 500
+- bg_color: '#ffffff'
+- 3000
+- RESET
+- 1500
 - ls -l example.*
 - 500
 - cat example.yaml
@@ -18,5 +21,3 @@ steps:
 - 500
 - ls -l example.*
 - 3000
-- CLEAR
-- 1500
