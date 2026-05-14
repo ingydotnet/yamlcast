@@ -1,6 +1,4 @@
 .cache/
-*.gif
 *.mp4
 *.webm
 /tmp/
-/example.*

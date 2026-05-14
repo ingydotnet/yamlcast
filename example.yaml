@@ -1,0 +1,13 @@
+width: 1200
+height: 600
+font_size: 22
+typing_speed: 50ms
+padding: 0
+background_color: '#171717'
+
+steps:
+- 500
+- cowsay 'Moo!'
+- 1000
+- CLEAR
+- 2000

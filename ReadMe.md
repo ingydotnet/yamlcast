@@ -6,6 +6,8 @@ It translates the YAML into a [VHS](https://github.com/charmbracelet/vhs)
 `.tape` script and invokes `vhs` to render it.
 The translator is a single YAMLScript program at `bin/yamlcast`.
 
+![demo](demo.gif)
+
 ## Requirements
 
 YAMLcast bootstraps everything it needs into `./.cache/`:

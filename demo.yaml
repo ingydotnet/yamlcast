@@ -1,0 +1,22 @@
+width: 1200
+height: 600
+font_size: 22
+typing_speed: 50ms
+padding: 0
+background_color: '#171717'
+
+steps:
+- 500
+- ls -l example.*
+- 500
+- cat example.yaml
+- 3000
+- CLEAR
+- 500
+- yamlcast example.*
+- wait: Created
+- 500
+- ls -l example.*
+- 3000
+- CLEAR
+- 1500
