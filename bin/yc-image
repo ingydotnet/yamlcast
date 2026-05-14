@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+: "${YAMLCAST_ROOT:?YAMLCAST_ROOT not set; 'source .rc' first}"
+exec "$YAMLCAST_ROOT/.cache/local/venv/bin/python3" \
+  "$YAMLCAST_ROOT/bin/yc-image.py" "$@"

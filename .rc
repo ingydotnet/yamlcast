@@ -5,10 +5,10 @@
 # bash
 test -n "$BASH_VERSION" && eval '
 YAMLCAST_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-PATH=$YAMLCAST_ROOT/bin:$PATH
+PATH=$YAMLCAST_ROOT/bin:$YAMLCAST_ROOT/.cache/local/bin:$PATH
 MANPATH=$YAMLCAST_ROOT/man:$(manpath 2>/dev/null)
 YAMLCAST_SHELL=bash
-export PATH MANPATH YAMLCAST_SHELL
+export YAMLCAST_ROOT PATH MANPATH YAMLCAST_SHELL
 if [[ -d $YAMLCAST_ROOT/.cache/local ]]; then
   source <(gloat --complete bash)
 fi
@@ -18,9 +18,10 @@ return
 # fish
 test -n "$FISH_VERSION" && eval '
 set YAMLCAST_ROOT (cd (dirname (status filename)) && pwd -P)
-set PATH $YAMLCAST_ROOT/bin:$PATH
+set PATH $YAMLCAST_ROOT/bin:$YAMLCAST_ROOT/.cache/local/bin:$PATH
 set MANPATH $YAMLCAST_ROOT/man:(manpath 2>/dev/null)
 set -gx YAMLCAST_SHELL fish
+set -gx YAMLCAST_ROOT $YAMLCAST_ROOT
 export PATH MANPATH
 gloat --complete fish | source
 exit
@@ -29,10 +30,10 @@ exit
 # zsh
 test -n "$ZSH_VERSION" && eval '
 YAMLCAST_ROOT=$(cd "$(dirname "$0")" && pwd -P)
-PATH=$YAMLCAST_ROOT/bin:$YAMLCAST_ROOT/local/bin:$PATH
+PATH=$YAMLCAST_ROOT/bin:$YAMLCAST_ROOT/.cache/local/bin:$PATH
 MANPATH=$YAMLCAST_ROOT/man:$YAMLCAST_ROOT/local/man:$(manpath 2>/dev/null)
 YAMLCAST_SHELL=zsh
-export PATH MANPATH YAMLCAST_SHELL
+export YAMLCAST_ROOT PATH MANPATH YAMLCAST_SHELL
 if [[ -d $YAMLCAST_ROOT/.cache/local ]]; then
   eval "$(gloat --complete zsh)"
 fi
