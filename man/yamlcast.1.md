@@ -45,11 +45,13 @@ The recognized top-level keys are:
       Supported keys are
       **type**, **sleep**, **enter**, **image**, **tab**, **backspace**,
       **space**, **hide**, **show**, **screenshot**, **ctrl**, **source**,
-      **require**, and **bg_color**.
+      **require**, **wait**, and **bg_color**.
       **enter** may be given an optional text value; in that form the text
       is typed and then **Enter** is pressed.
       **image** takes a path; the image is rendered in the cast terminal
       with `yc-image`, with the typing of the command hidden.
+      **wait** takes a regex; recording blocks for up to 30 seconds until
+      the pattern appears anywhere on the visible screen.
       **bg_color** takes a hex color (with or without a leading `#`) and
       changes the terminal background mid-cast.
     - A bare ALL-CAPS string (e.g. **CLEAR**, **ENTER**, **CTRL+L**):

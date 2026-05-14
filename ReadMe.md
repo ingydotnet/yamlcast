@@ -63,11 +63,13 @@ Each step is one of:
 - A single-key mapping.
   Supported keys: `type`, `sleep`, `enter`, `image`, `tab`, `backspace`,
   `space`, `hide`, `show`, `screenshot`, `ctrl`, `source`, `require`,
-  `bg_color`.
+  `wait`, `bg_color`.
   `enter` may take an optional text value; the text is typed and then
   `Enter` is pressed.
   `image` takes a path; the image is rendered in the cast terminal with
   `yc-image`, with the typing of the command hidden.
+  `wait` takes a regex; recording blocks for up to 30 seconds until the
+  pattern appears anywhere on the visible screen.
   `bg_color` takes a hex color (with or without a leading `#`) and
   changes the terminal background mid-cast.
 - A bare ALL-CAPS string (e.g. `CLEAR`, `ENTER`, `CTRL+L`): emits the

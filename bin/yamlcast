@@ -108,6 +108,7 @@ defn step-to-lines(k v):
     k == 'ctrl':       +["Ctrl+$v"]
     k == 'source':     +["Source $v"]
     k == 'require':    +["Require $v"]
+    k == 'wait':       +["Wait+Screen@30s /$v/"]
     k == 'bg_color':   bg-osc-lines(v)
     else:              +[]
 
