@@ -13,7 +13,7 @@ steps:
 - 3000
 - CLEAR
 - 500
-- yamlcast example.*
+- yamlcast example.yaml
 - wait: Created
 - 500
 - ls -l example.*

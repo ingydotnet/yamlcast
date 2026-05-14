@@ -1,16 +1,18 @@
-# YAMLcast
+# YAMLCast
 
-YAMLcast turns a YAML description of a terminal screencast into an animated GIF.
+YAMLCast turns a YAML description of a terminal screencast into an animated GIF.
 
 It translates the YAML into a [VHS](https://github.com/charmbracelet/vhs)
 `.tape` script and invokes `vhs` to render it.
 The translator is a single YAMLScript program at `bin/yamlcast`.
 
+Here's a YAMLCast about running `yamlcast`:
+
 ![demo](demo.gif)
 
 ## Requirements
 
-YAMLcast bootstraps everything it needs into `./.cache/`:
+YAMLCast bootstraps everything it needs into `./.cache/`:
 
 - [Makes](https://github.com/makeplus/makes) for the build system.
 - [YAMLScript](https://yamlscript.org) (`ys-0`) for running `bin/yamlcast`.
@@ -49,7 +51,7 @@ On the first real (non-dry-run) invocation, Go and VHS are installed into
 
 ## Input format
 
-A YAMLcast input file is a map.
+A YAMLCast input file is a map.
 The recognized top-level keys are:
 
 - `output` (optional): the output GIF file name.
